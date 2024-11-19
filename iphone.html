@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Rw7</title>
+    <link rel="stylesheet" href="iphone-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="iphone">
+        <div class="notch">
+            <div class="camera"></div>
+            <div class="speaker"></div>
+        </div>
+        <div class="screen">
+            <div class="time"></div>
+            <div class="apps">
+                <div class="app" onclick="openChat()">
+                    <div class="app-icon">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <span>Chat Rw7</span>
+                </div>
+            </div>
+            <div class="dock">
+                <div class="home-indicator"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function updateTime() {
+            const timeDiv = document.querySelector('.time');
+            const now = new Date();
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            timeDiv.textContent = `${hours}:${minutes}`;
+        }
+        
+        function openChat() {
+            document.querySelector('.screen').style.animation = 'fadeOut 0.3s forwards';
+            setTimeout(() => {
+                window.location.href = 'chat.html';
+            }, 300);
+        }
+
+        updateTime();
+        setInterval(updateTime, 1000);
+    </script>
+</body>
+</html> 
