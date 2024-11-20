@@ -134,20 +134,27 @@
         async function checkFriendRequests() {
             const myCode = localStorage.getItem('userCode');
             
+            if (!myCode) {
+                console.error('User code not found');
+                return;
+            }
+
             try {
-                const snapshot = await db.collection('friendRequests')
+                // الاستماع للتغييرات في الوقت الفعلي
+                db.collection('friendRequests')
                     .where('to', '==', myCode)
                     .where('status', '==', 'pending')
-                    .get();
-                    
-                const requests = snapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                }));
-
-                displayFriendRequests(requests);
+                    .onSnapshot((snapshot) => {
+                        const requests = snapshot.docs.map(doc => ({
+                            id: doc.id,
+                            ...doc.data()
+                        }));
+                        displayFriendRequests(requests);
+                    }, (error) => {
+                        console.error("Error listening to friend requests:", error);
+                    });
             } catch (error) {
-                console.error('Error loading requests:', error);
+                console.error('Error in checkFriendRequests:', error);
             }
         }
 
@@ -155,14 +162,18 @@
             if (!requestId) return;
 
             try {
-                await db.collection('friendRequests').doc(requestId).update({
+                const requestRef = db.collection('friendRequests').doc(requestId);
+                await requestRef.update({
                     status: 'accepted',
                     acceptedAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
                 
+                // تحديث واجهة المستخدم مباشرة
+                await checkFriendRequests();
+                await updateFriendsList();
+                showChats();
+                
                 alert('تم قبول طلب الصداقة!');
-                await checkFriendRequests(); // تحديث قائمة الطلبات
-                showChats(); // تحديث قائمة المحادثات
             } catch (error) {
                 console.error('Error accepting request:', error);
                 alert('حدث خطأ في قبول الطلب');
@@ -173,13 +184,16 @@
             if (!requestId) return;
 
             try {
-                await db.collection('friendRequests').doc(requestId).update({
+                const requestRef = db.collection('friendRequests').doc(requestId);
+                await requestRef.update({
                     status: 'rejected',
                     rejectedAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
                 
+                // تحديث واجهة المستخدم مباشرة
+                await checkFriendRequests();
+                
                 alert('تم رفض طلب الصداقة');
-                await checkFriendRequests(); // تحديث قائمة الطلبات
             } catch (error) {
                 console.error('Error rejecting request:', error);
                 alert('حدث خطأ في رفض الطلب');
@@ -511,12 +525,8 @@
                         <span>طلب صداقة من: ${request.from}</span>
                     </div>
                     <div class="request-actions">
-                        <button onclick="acceptRequest('${request.id}')" class="accept-btn">
-                            <i class="fas fa-check"></i> قبول
-                        </button>
-                        <button onclick="rejectRequest('${request.id}')" class="reject-btn">
-                            <i class="fas fa-times"></i> رفض
-                        </button>
+                        <button onclick="acceptRequest('${request.id}')" class="accept-btn">قبول</button>
+                        <button onclick="rejectRequest('${request.id}')" class="reject-btn">رفض</button>
                     </div>
                 `;
                 requestsContainer.appendChild(requestElement);
