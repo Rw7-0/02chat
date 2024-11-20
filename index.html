@@ -26,24 +26,31 @@
       const db = firebase.firestore();
 
       async function checkUserCode() {
-        let userCode = localStorage.getItem("userCode");
+        let userCode = localStorage.getItem('userCode');
         if (!userCode) {
-          const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-          userCode = "";
-          for (let i = 0; i < 6; i++) {
-            userCode += characters.charAt(
-              Math.floor(Math.random() * characters.length)
-            );
-          }
-          
-          await db.collection('users').doc(userCode).set({
-            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-            lastActive: firebase.firestore.FieldValue.serverTimestamp()
-          });
-          
-          localStorage.setItem("userCode", userCode);
+            const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            userCode = '';
+            for(let i = 0; i < 6; i++) {
+                userCode += characters.charAt(Math.floor(Math.random() * characters.length));
+            }
+            
+            try {
+                // إضافة المستخدم في Firebase
+                await db.collection('users').doc(userCode).set({
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    lastActive: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                localStorage.setItem('userCode', userCode);
+            } catch (error) {
+                console.error('Error creating user:', error);
+                alert('حدث خطأ في إنشاء المستخدم');
+                return;
+            }
         }
-        window.location.href = "chat.html";
+        
+        // الانتقال إلى صفحة المحادثات
+        window.location.href = 'chat.html';
       }
 
       function checkFriendRequests() {
