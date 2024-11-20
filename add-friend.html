@@ -68,18 +68,25 @@
             const myCode = localStorage.getItem('userCode');
             
             try {
+                const userDoc = await db.collection('users').doc(code).get();
+                if (!userDoc.exists) {
+                    alert('هذا الكود غير موجود');
+                    return;
+                }
+
                 await db.collection('friendRequests').add({
                     from: myCode,
                     to: code,
                     status: 'pending',
-                    time: firebase.firestore.FieldValue.serverTimestamp()
+                    time: firebase.firestore.FieldValue.serverTimestamp(),
+                    participants: [myCode, code]
                 });
 
                 alert('تم إرسال طلب الإضافة بنجاح!');
                 window.location.href = 'chat.html';
             } catch (error) {
+                console.error('Error:', error);
                 alert('حدث خطأ في إرسال الطلب');
-                console.error(error);
             }
         }
 
