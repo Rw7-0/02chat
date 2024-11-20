@@ -6,6 +6,25 @@
     <title>Rw7 chat</title>
     <link rel="stylesheet" href="chat-style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    
+    <script>
+        // تكوين Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyAYWFY3sLzNfcnDDIqNfyD7ipnHXbswjHY",
+            authDomain: "x12-4e880.firebaseapp.com",
+            projectId: "x12-4e880",
+            storageBucket: "x12-4e880.firebasestorage.app",
+            messagingSenderId: "808560716111",
+            appId: "1:808560716111:web:4b0d47d1442c896187fd3a",
+            measurementId: "G-3EEHZT3Z7V"
+        };
+
+        // تهيئة Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+    </script>
 </head>
 <body>
     <div class="iphone-container">
