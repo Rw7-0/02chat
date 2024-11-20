@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rw7 chat</title>
+    <link rel="stylesheet" href="chat-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="iphone-container">
+        <div class="iphone">
+            <div class="screen">
+                <div class="notch"></div>
+                <div class="chat-container">
+                    <div class="header">
+                        <a href="chat.html" class="back-button">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                        <h1 id="chatTitle">محادثة</h1>
+                        <div class="chat-options" onclick="toggleOptions()">
+                            <i class="fas fa-ellipsis"></i>
+                            <!-- قائمة الخيارات المنبثقة -->
+                            <div class="options-menu" id="optionsMenu">
+                                <div class="option-item delete-friend" onclick="showDeleteConfirm()">
+                                    <i class="fas fa-user-minus"></i>
+                                    <span>إزالة صديق</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="messages" id="messageContainer">
+                        <!-- الرسائل ستضاف هنا -->
+                    </div>
+
+                    <div class="message-input">
+                        <button class="music-btn" onclick="toggleMusicInput()">
+                            <i class="fas fa-music"></i>
+                        </button>
+                        <input type="text" id="messageText" placeholder="اكتب رسالتك هنا...">
+                        <button onclick="sendMessage()">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="buttons">
+                <div class="power-button"></div>
+                <div class="volume-button"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- تعديل مربع التأكيد -->
+    <div id="confirmDialog" class="confirm-dialog">
+        <div class="confirm-content">
+            <p>هل تريد إزالة هذا الصديق من قائمة أصدقائك؟</p>
+            <div class="confirm-buttons">
+                <button onclick="confirmDelete()" class="confirm-yes">إزالة</button>
+                <button onclick="hideDeleteConfirm()" class="confirm-no">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- إضافة قسم الموسيقى -->
+    <div id="musicPlayer" class="music-player">
+        <div class="music-input">
+            <input type="text" id="youtubeUrl" placeholder="ضع رابط YouTube هنا" dir="ltr">
+            <button onclick="loadYoutubeVideo()">
+                <i class="fas fa-play"></i>
+            </button>
+        </div>
+        <div class="music-controls">
+            <!-- إضافة أيقونة الصوت -->
+            <div class="volume-control">
+                <i class="fas fa-volume-up" id="volumeIcon"></i>
+                <input type="range" id="volumeControl" min="0" max="100" value="50">
+            </div>
+            <div class="playback-controls">
+                <button onclick="togglePlay()" class="control-btn">
+                    <i class="fas fa-play" id="playPauseIcon"></i>
+                </button>
+                <button onclick="stopMusic()" class="control-btn">
+                    <i class="fas fa-stop"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let friendCode = '';
+        let audio = null;
+
+        window.onload = function() {
+            friendCode = localStorage.getItem('currentChat');
+            document.getElementById('chatTitle').textContent = `محادثة مع ${friendCode}`;
+            loadMessages();
+        }
+
+        function loadMessages() {
+            const messages = JSON.parse(localStorage.getItem(`chat_${friendCode}`) || '[]');
+            const container = document.getElementById('messageContainer');
+            const myCode = localStorage.getItem('userCode');
+            container.innerHTML = '';
+
+            messages.forEach((msg, index) => {
+                const messageElement = document.createElement('div');
+                messageElement.className = `message ${msg.from === myCode ? 'sent' : 'received'}`;
+                messageElement.textContent = msg.text;
+                
+                // إضافة خاصية الضغط المطول للرسائل المرسلة فقط
+                if (msg.from === myCode) {
+                    messageElement.addEventListener('contextmenu', (e) => {
+                        e.preventDefault(); // منع القائمة الافتراضية
+                        showMessageOptions(index, e.clientX, e.clientY);
+                    });
+
+                    // للموبايل - ضغطة طويلة
+                    let pressTimer;
+                    messageElement.addEventListener('touchstart', (e) => {
+                        pressTimer = setTimeout(() => {
+                            showMessageOptions(index, e.touches[0].clientX, e.touches[0].clientY);
+                        }, 500);
+                    });
+                    messageElement.addEventListener('touchend', () => {
+                        clearTimeout(pressTimer);
+                    });
+                }
+                
+                container.appendChild(messageElement);
+            });
+            
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function showMessageOptions(messageIndex, x, y) {
+            // إزالة أي قوائم سابقة
+            const oldMenu = document.querySelector('.message-options');
+            if (oldMenu) oldMenu.remove();
+
+            // إنشاء قائمة الخيارات
+            const optionsMenu = document.createElement('div');
+            optionsMenu.className = 'message-options';
+            optionsMenu.innerHTML = `
+                <div class="option-item delete-message" onclick="deleteMessage(${messageIndex})">
+                    <i class="fas fa-trash"></i>
+                    <span>حذف الرسالة</span>
+                </div>
+            `;
+
+            // تحديد موقع القائمة
+            optionsMenu.style.position = 'fixed';
+            optionsMenu.style.left = `${x}px`;
+            optionsMenu.style.top = `${y}px`;
+
+            document.body.appendChild(optionsMenu);
+
+            // إغلاق القائمة عند النقر في أي مكان آخر
+            document.addEventListener('click', function closeMenu(e) {
+                if (!optionsMenu.contains(e.target)) {
+                    optionsMenu.remove();
+                    document.removeEventListener('click', closeMenu);
+                }
+            });
+        }
+
+        function deleteMessage(index) {
+            let messages = JSON.parse(localStorage.getItem(`chat_${friendCode}`) || '[]');
+            messages.splice(index, 1);
+            localStorage.setItem(`chat_${friendCode}`, JSON.stringify(messages));
+            loadMessages();
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('messageText');
+            const text = input.value.trim();
+            
+            if (!text) return;
+
+            const myCode = localStorage.getItem('userCode');
+            
+            try {
+                await db.collection('messages').add({
+                    from: myCode,
+                    to: friendCode,
+                    text: text,
+                    time: firebase.firestore.FieldValue.serverTimestamp(),
+                    participants: [myCode, friendCode]
+                });
+
+                input.value = '';
+                
+                // الاستماع للتغييرات في الرسائل
+                listenToMessages();
+            } catch (error) {
+                alert('حدث خطأ في إرسال الرسالة');
+                console.error(error);
+            }
+        }
+
+        // إضافة دالة الاستماع للرسائل الجديدة
+        function listenToMessages() {
+            const myCode = localStorage.getItem('userCode');
+            
+            db.collection('messages')
+                .where('participants', 'array-contains', myCode)
+                .orderBy('time')
+                .onSnapshot((snapshot) => {
+                    snapshot.docChanges().forEach((change) => {
+                        if (change.type === "added") {
+                            displayNewMessage(change.doc.data());
+                        }
+                    });
+                });
+        }
+
+        // إضافة مستمع لمفتاح Enter
+        document.getElementById('messageText').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // إضافة الدوال الجديدة
+        function toggleOptions() {
+            const menu = document.getElementById('optionsMenu');
+            menu.classList.toggle('show');
+        }
+
+        function showDeleteConfirm() {
+            document.getElementById('confirmDialog').classList.add('show');
+            document.getElementById('optionsMenu').classList.remove('show');
+        }
+
+        function hideDeleteConfirm() {
+            document.getElementById('confirmDialog').classList.remove('show');
+        }
+
+        function confirmDelete() {
+            const friendCode = localStorage.getItem('currentChat');
+            const myCode = localStorage.getItem('userCode');
+            let requests = JSON.parse(localStorage.getItem('friendRequests') || '[]');
+            requests = requests.filter(req => 
+                !(req.status === 'accepted' && 
+                ((req.from === myCode && req.to === friendCode) || 
+                 (req.from === friendCode && req.to === myCode)))
+            );
+            localStorage.setItem('friendRequests', JSON.stringify(requests));
+            
+            localStorage.removeItem(`chat_${friendCode}`);
+            window.location.href = 'chat.html';
+        }
+
+        // إغلاق القوائم عند النقر خارجها
+        document.addEventListener('click', function(event) {
+            const menu = document.getElementById('optionsMenu');
+            const options = document.querySelector('.chat-options');
+            const confirmDialog = document.getElementById('confirmDialog');
+            
+            if (!options.contains(event.target) && menu.classList.contains('show')) {
+                menu.classList.remove('show');
+            }
+            
+            if (event.target === confirmDialog) {
+                hideDeleteConfirm();
+            }
+        });
+
+        function toggleMusicInput() {
+            const player = document.getElementById('musicPlayer');
+            player.classList.toggle('show');
+        }
+
+        function playMusic() {
+            const url = document.getElementById('musicUrl').value;
+            if (!url) return;
+
+            if (audio) {
+                audio.pause();
+                audio = null;
+            }
+
+            audio = new Audio(url);
+            audio.volume = document.getElementById('volumeControl').value / 100;
+            audio.play();
+            
+            // إرسال رسالة في المحادثة
+            const message = {
+                from: localStorage.getItem('userCode'),
+                to: friendCode,
+                text: '🎵 يتم تشغيل موسيقى',
+                time: new Date().toISOString()
+            };
+            
+            let messages = JSON.parse(localStorage.getItem(`chat_${friendCode}`) || '[]');
+            messages.push(message);
+            localStorage.setItem(`chat_${friendCode}`, JSON.stringify(messages));
+            loadMessages();
+        }
+
+        function togglePlay() {
+            if (!audio) return;
+            
+            const icon = document.getElementById('playPauseIcon');
+            if (audio.paused) {
+                audio.play();
+                icon.className = 'fas fa-pause';
+            } else {
+                audio.pause();
+                icon.className = 'fas fa-play';
+            }
+        }
+
+        function stopMusic() {
+            if (!audio) return;
+            audio.pause();
+            audio.currentTime = 0;
+            document.getElementById('playPauseIcon').className = 'fas fa-play';
+        }
+
+        document.getElementById('volumeControl').addEventListener('input', function(e) {
+            if (audio) {
+                audio.volume = e.target.value / 100;
+            }
+        });
+
+        // تحديث دالة التحكم في الصوت
+        document.getElementById('volumeControl').addEventListener('input', function(e) {
+            if (player) {
+                const volume = e.target.value;
+                player.setVolume(volume);
+                
+                // تحديث أيقونة الصوت
+                const volumeIcon = document.getElementById('volumeIcon');
+                if (volume == 0) {
+                    volumeIcon.className = 'fas fa-volume-mute';
+                } else if (volume < 50) {
+                    volumeIcon.className = 'fas fa-volume-down';
+                } else {
+                    volumeIcon.className = 'fas fa-volume-up';
+                }
+            }
+        });
+
+        // تعديل دالة removeFriend
+        async function removeFriend(friendCode) {
+            if (confirm('هل أنت متأكد من إزالة هذا الصديق؟')) {
+                const myCode = localStorage.getItem('userCode');
+                
+                try {
+                    const snapshot = await db.collection('friendRequests')
+                        .where('participants', 'array-contains', myCode)
+                        .get();
+                        
+                    const batch = db.batch();
+                    
+                    snapshot.docs.forEach((doc) => {
+                        batch.delete(doc.ref);
+                    });
+                    
+                    await batch.commit();
+                    alert('تم إزالة الصديق بنجاح');
+                    window.location.href = 'chat.html';
+                } catch (error) {
+                    alert('حدث خطأ في إزالة الصديق');
+                    console.error(error);
+                }
+            }
+        }
+    </script>
+
+    <style>
+        .message-options {
+            position: fixed;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            min-width: 140px;
+            z-index: 1000;
+            padding: 5px;
+        }
+
+        .message-options .option-item {
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #ff3b30;
+            cursor: pointer;
+        }
+
+        .message-options .option-item:hover {
+            background-color: #f8f8f8;
+            border-radius: 8px;
+        }
+
+        .delete-message {
+            color: #ff3b30;
+        }
+
+        .delete-message i {
+            font-size: 16px;
+        }
+
+        .music-player {
+            position: absolute;
+            bottom: 70px;
+            left: 0;
+            right: 0;
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 15px;
+            border-top: 1px solid #ddd;
+            display: none;
+            backdrop-filter: blur(10px);
+        }
+
+        .music-player.show {
+            display: block;
+        }
+
+        .music-input {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .music-input input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+
+        .music-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .music-controls input[type="range"] {
+            flex: 1;
+            max-width: 150px;
+        }
+
+        .music-btn {
+            background: none;
+            border: none;
+            color: #007AFF;
+            font-size: 20px;
+            padding: 0 10px;
+        }
+
+        .dark-theme .music-player {
+            background-color: rgba(58, 58, 60, 0.95);
+        }
+
+        .dark-theme .music-input input {
+            background-color: #2c2c2e;
+            border-color: #3a3a3c;
+            color: white;
+        }
+
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+        }
+
+        .volume-control i {
+            color: #007AFF;
+            font-size: 18px;
+            min-width: 20px;
+        }
+
+        #volumeControl {
+            width: 100%;
+            height: 4px;
+            -webkit-appearance: none;
+            background: #e1e1e1;
+            border-radius: 2px;
+            outline: none;
+        }
+
+        #volumeControl::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 15px;
+            height: 15px;
+            background: #007AFF;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .playback-controls {
+            display: flex;
+            gap: 15px;
+        }
+
+        .control-btn {
+            background: none;
+            border: none;
+            color: #007AFF;
+            font-size: 20px;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .control-btn:active {
+            background-color: rgba(0, 122, 255, 0.1);
+        }
+
+        /* للوضع الداكن */
+        .dark-theme .music-player {
+            background-color: rgba(58, 58, 60, 0.95);
+        }
+
+        .dark-theme #volumeControl {
+            background: #48484a;
+        }
+    </style>
+</body>
+</html> 
