@@ -128,7 +128,7 @@
         function copyCode() {
             const code = document.getElementById('userCode').textContent;
             navigator.clipboard.writeText(code);
-            alert('تم نسخ ��لكود!');
+            alert('تم نسخ لكود!');
         }
 
         async function checkFriendRequests() {
@@ -430,37 +430,32 @@
             }
         }
 
-        window.onload = function() {
-            // التحقق من وجود كود مخزن مسبقاً
-            let userCode = localStorage.getItem('userCode');
-            
-            // إذا لم يكن هناك كود مخزن، نقوم بإنشاء كود جديد
-            if (!userCode) {
-                const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-                userCode = '';
-                for(let i = 0; i < 6; i++) {
-                    userCode += characters.charAt(Math.floor(Math.random() * characters.length));
-                }
-                // تخزين الكود الجديد
-                localStorage.setItem('userCode', userCode);
-            }
-            
-            // عرض الكود في الصفحة
+        window.onload = async function() {
+            // عرض الكود الخاص بالمستخدم
+            const userCode = localStorage.getItem('userCode');
             document.getElementById('userCode').textContent = userCode;
 
-            // التحقق من وجود طلبات إضافة
-            checkFriendRequests();
+            try {
+                // جلب طلبات الإضافة من Firebase
+                const snapshot = await db.collection('friendRequests')
+                    .where('to', '==', userCode)
+                    .where('status', '==', 'pending')
+                    .get();
+                    
+                const requests = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
 
-            // إضافة استدعاء لعرض المحادثات
-            showChats();
+                // عرض طلبات الإضافة
+                displayFriendRequests(requests);
 
-            // تحميل الإعدادات
-            loadPrivacySettings();
+                // جلب وعرض المحادثات
+                showChats();
 
-            // تحميل حالة الوضع الداكن
-            const isDark = localStorage.getItem('darkMode') === 'true';
-            document.getElementById('darkMode').checked = isDark;
-            document.body.classList.toggle('dark-theme', isDark);
+            } catch (error) {
+                console.error('Error loading data:', error);
+            }
         }
 
         async function sendMessage() {
