@@ -120,7 +120,7 @@
             </div>
         </div>
     </div>
-    
+
     <script src="https://www.youtube.com/iframe_api"></script>
     <script>
         let player;
@@ -152,35 +152,38 @@
         }
 
         async function acceptRequest(requestId) {
+            if (!requestId) return;
+
             try {
                 await db.collection('friendRequests').doc(requestId).update({
                     status: 'accepted',
                     acceptedAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
-                alert('تم قبول الطلب!');
-                checkFriendRequests();
+                
+                alert('تم قبول طلب الصداقة!');
+                await checkFriendRequests(); // تحديث قائمة الطلبات
+                showChats(); // تحديث قائمة المحادثات
             } catch (error) {
+                console.error('Error accepting request:', error);
                 alert('حدث خطأ في قبول الطلب');
-                console.error(error);
             }
         }
 
-        function rejectRequest(fromCode) {
-            updateRequestStatus(fromCode, 'rejected');
-            alert('تم رفض الطلب');
-            location.reload();
-        }
+        async function rejectRequest(requestId) {
+            if (!requestId) return;
 
-        function updateRequestStatus(fromCode, status) {
-            const myCode = localStorage.getItem('userCode');
-            let requests = JSON.parse(localStorage.getItem('friendRequests') || '[]');
-            requests = requests.map(req => {
-                if (req.from === fromCode && req.to === myCode) {
-                    return { ...req, status: status };
-                }
-                return req;
-            });
-            localStorage.setItem('friendRequests', JSON.stringify(requests));
+            try {
+                await db.collection('friendRequests').doc(requestId).update({
+                    status: 'rejected',
+                    rejectedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                alert('تم رفض طلب الصداقة');
+                await checkFriendRequests(); // تحديث قائمة الطلبات
+            } catch (error) {
+                console.error('Error rejecting request:', error);
+                alert('حدث خطأ في رفض الطلب');
+            }
         }
 
         function toggleChatList() {
@@ -433,28 +436,20 @@
         window.onload = async function() {
             // عرض الكود الخاص بالمستخدم
             const userCode = localStorage.getItem('userCode');
-            document.getElementById('userCode').textContent = userCode;
+            if (!userCode) {
+                // إنشاء كود عشوائي إذا لم يكن موجوداً
+                const newCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+                localStorage.setItem('userCode', newCode);
+                document.getElementById('userCode').textContent = newCode;
+            } else {
+                document.getElementById('userCode').textContent = userCode;
+            }
 
             try {
-                // جلب طلبات الإضافة من Firebase
-                const snapshot = await db.collection('friendRequests')
-                    .where('to', '==', userCode)
-                    .where('status', '==', 'pending')
-                    .get();
-                    
-                const requests = snapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                }));
-
-                // عرض طلبات الإضافة
-                displayFriendRequests(requests);
-
-                // جلب وعرض المحادثات
+                await checkFriendRequests();
                 showChats();
-
             } catch (error) {
-                console.error('Error loading data:', error);
+                console.error('Error in window.onload:', error);
             }
         }
 
@@ -495,6 +490,77 @@
                 displayMessages(messages);
             } catch (error) {
                 console.error('Error loading messages:', error);
+            }
+        }
+
+        function displayFriendRequests(requests) {
+            const requestsContainer = document.getElementById('friendRequests');
+            requestsContainer.innerHTML = '';
+
+            if (!requests || requests.length === 0) {
+                requestsContainer.innerHTML = '<p class="no-requests">لا توجد طلبات صداقة جديدة</p>';
+                return;
+            }
+
+            requests.forEach(request => {
+                const requestElement = document.createElement('div');
+                requestElement.className = 'friend-request';
+                requestElement.innerHTML = `
+                    <div class="request-info">
+                        <i class="fas fa-user"></i>
+                        <span>طلب صداقة من: ${request.from}</span>
+                    </div>
+                    <div class="request-actions">
+                        <button onclick="acceptRequest('${request.id}')" class="accept-btn">
+                            <i class="fas fa-check"></i> قبول
+                        </button>
+                        <button onclick="rejectRequest('${request.id}')" class="reject-btn">
+                            <i class="fas fa-times"></i> رفض
+                        </button>
+                    </div>
+                `;
+                requestsContainer.appendChild(requestElement);
+            });
+        }
+
+        async function sendFriendRequest(friendCode) {
+            const myCode = localStorage.getItem('userCode');
+            
+            if (!friendCode || !myCode) {
+                alert('حدث خطأ: الرجاء التأكد من الكود');
+                return;
+            }
+
+            if (friendCode === myCode) {
+                alert('لا يمكنك إضافة نفسك كصديق!');
+                return;
+            }
+
+            try {
+                // التحقق من وجود طلب صداقة مسبق
+                const existingRequests = await db.collection('friendRequests')
+                    .where('from', '==', myCode)
+                    .where('to', '==', friendCode)
+                    .where('status', '==', 'pending')
+                    .get();
+
+                if (!existingRequests.empty) {
+                    alert('لقد قمت بإرسال طلب صداقة مسبقاً لهذا المستخدم');
+                    return;
+                }
+
+                // إنشاء طلب صداقة جديد
+                await db.collection('friendRequests').add({
+                    from: myCode,
+                    to: friendCode,
+                    status: 'pending',
+                    time: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                alert('تم إرسال طلب الصداقة بنجاح!');
+            } catch (error) {
+                console.error('Error sending friend request:', error);
+                alert('حدث خطأ في إرسال طلب الصداقة');
             }
         }
     </script>
