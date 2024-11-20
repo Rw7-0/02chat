@@ -6,25 +6,8 @@
     <title>إضافة صديق</title>
     <link rel="stylesheet" href="chat-style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
-    <!-- إضافة مكتبات Firebase -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-    
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyAYWFY3sLzNfcnDDIqNfyD7ipnHXbswjHY",
-            authDomain: "x12-4e880.firebaseapp.com",
-            projectId: "x12-4e880",
-            storageBucket: "x12-4e880.firebasestorage.app",
-            messagingSenderId: "808560716111",
-            appId: "1:808560716111:web:4b0d47d1442c896187fd3a",
-            measurementId: "G-3EEHZT3Z7V"
-        };
-
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-    </script>
 </head>
 <body>
     <div class="iphone-container">
@@ -37,65 +20,99 @@
                             <i class="fas fa-chevron-right"></i>
                         </a>
                         <h1>إضافة صديق</h1>
-                        <div class="header-arrow">
-                            <i class="fas fa-chevron-left" style="color: #007AFF;"></i>
-                        </div>
                     </div>
 
-                    <div class="add-friend-input">
-                        <input type="text" id="friendCode" maxlength="6" placeholder="أدخل كود صديقك" 
-                               oninput="this.value = this.value.toUpperCase()">
-                        <button onclick="addFriend()" class="add-button">إضافة</button>
+                    <div class="add-friend-section">
+                        <div class="add-icon">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <h2>أضف صديق جديد</h2>
+                        <p class="subtitle">أدخل كود صديقك لإضافته</p>
+                        
+                        <div class="code-input">
+                            <input type="text" id="friendCode" placeholder="أدخل الكود" maxlength="6">
+                        </div>
+                        
+                        <button onclick="addFriend()" class="add-button">
+                            <i class="fas fa-plus"></i> إضافة صديق
+                        </button>
                     </div>
                 </div>
-            </div>
-            <div class="buttons">
-                <div class="power-button"></div>
-                <div class="volume-button"></div>
             </div>
         </div>
     </div>
 
     <script>
+        // تكوين Firebase (نفس التكوين الموجود في chat.html)
+        const firebaseConfig = {
+            apiKey: "AIzaSyAYWFY3sLzNfcnDDIqNfyD7ipnHXbswjHY",
+            authDomain: "x12-4e880.firebaseapp.com",
+            projectId: "x12-4e880",
+            storageBucket: "x12-4e880.firebasestorage.app",
+            messagingSenderId: "808560716111",
+            appId: "1:808560716111:web:4b0d47d1442c896187fd3a",
+            measurementId: "G-3EEHZT3Z7V"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
         async function addFriend() {
-            const code = document.getElementById('friendCode').value;
-            if(code.length !== 6) {
-                alert('الرجاء إدخال كود مكون من 6 أحرف');
+            const friendCode = document.getElementById('friendCode').value.trim().toUpperCase();
+            
+            if (!friendCode) {
+                alert('الرجاء إدخال كود الصديق');
                 return;
             }
 
-            const myCode = localStorage.getItem('userCode');
-            
             try {
-                // إضافة المستخدم في قاعدة البيانات إذا لم يكن موجوداً
-                await db.collection('users').doc(myCode).set({
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    lastActive: firebase.firestore.FieldValue.serverTimestamp()
-                }, { merge: true });
-
-                // إضافة طلب الصداقة
-                await db.collection('friendRequests').add({
-                    from: myCode,
-                    to: code,
-                    status: 'pending',
-                    time: firebase.firestore.FieldValue.serverTimestamp(),
-                    participants: [myCode, code]
-                });
-
-                alert('تم إرسال طلب الإضافة بنجاح!');
-                window.location.href = 'chat.html';
+                await sendFriendRequest(friendCode);
+                document.getElementById('friendCode').value = '';
             } catch (error) {
-                console.error('Error:', error);
+                console.error('Error in addFriend:', error);
                 alert('حدث خطأ في إرسال الطلب');
             }
         }
 
-        document.getElementById('friendCode').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                addFriend();
+        // نسخ دالة sendFriendRequest من chat.html
+        async function sendFriendRequest(friendCode) {
+            const myCode = localStorage.getItem('userCode');
+            
+            if (!friendCode || !myCode) {
+                alert('حدث خطأ: الرجاء التأكد من الكود');
+                return;
             }
-        });
+
+            if (friendCode === myCode) {
+                alert('لا يمكنك إضافة نفسك كصديق!');
+                return;
+            }
+
+            try {
+                const existingRequests = await db.collection('friendRequests')
+                    .where('from', '==', myCode)
+                    .where('to', '==', friendCode)
+                    .where('status', '==', 'pending')
+                    .get();
+
+                if (!existingRequests.empty) {
+                    alert('لقد قمت بإرسال طلب صداقة مسبقاً لهذا المستخدم');
+                    return;
+                }
+
+                await db.collection('friendRequests').add({
+                    from: myCode,
+                    to: friendCode,
+                    status: 'pending',
+                    time: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                alert('تم إرسال طلب الصداقة بنجاح!');
+            } catch (error) {
+                console.error('Error sending friend request:', error);
+                alert('حدث خطأ في إرسال طلب الصداقة');
+            }
+        }
     </script>
 </body>
 </html> 
