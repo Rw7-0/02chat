@@ -67,24 +67,20 @@
             const myCode = localStorage.getItem('userCode');
             
             try {
-                // التحقق من وجود المستخدم
-                const userRef = await db.collection('users').doc(code).get();
-                
-                if (!userRef.exists) {
-                    alert('هذا الكود غير موجود');
-                    return;
-                }
+                // إضافة المستخدم في قاعدة البيانات إذا لم يكن موجوداً
+                await db.collection('users').doc(myCode).set({
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    lastActive: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
 
-                // إضافة طلب الصداقة في Firebase
-                const friendRequest = {
+                // إضافة طلب الصداقة
+                await db.collection('friendRequests').add({
                     from: myCode,
                     to: code,
                     status: 'pending',
                     time: firebase.firestore.FieldValue.serverTimestamp(),
                     participants: [myCode, code]
-                };
-
-                await db.collection('friendRequests').add(friendRequest);
+                });
 
                 alert('تم إرسال طلب الإضافة بنجاح!');
                 window.location.href = 'chat.html';
