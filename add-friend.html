@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rw7 chat</title>
+    <link rel="stylesheet" href="chat-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="iphone-container">
+        <div class="iphone">
+            <div class="screen">
+                <div class="notch"></div>
+                <div class="chat-container">
+                    <div class="header">
+                        <a href="chat.html" class="back-button">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                        <h1>إضافة صديق</h1>
+                        <div></div>
+                    </div>
+
+                    <div class="add-friend-section">
+                        <div class="add-icon">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <h2>أدخل كود صديقك</h2>
+                        <p class="subtitle">الكود يتكون من 6 أحرف إنجليزية</p>
+                        
+                        <div class="code-input">
+                            <input type="text" id="friendCode" maxlength="6" placeholder="ABCDEF" 
+                                   oninput="this.value = this.value.toUpperCase()">
+                        </div>
+
+                        <button class="add-button" onclick="addFriend()">
+                            إضافة
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="buttons">
+                <div class="power-button"></div>
+                <div class="volume-button"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function addFriend() {
+            const code = document.getElementById('friendCode').value;
+            if(code.length !== 6) {
+                alert('الرجاء إدخال كود مكون من 6 أحرف');
+                return;
+            }
+
+            // نتحقق من الكود المخزن للمستخدم الحالي
+            const myCode = localStorage.getItem('userCode');
+            
+            // نخزن طلب الإضافة في localStorage
+            let friendRequests = JSON.parse(localStorage.getItem('friendRequests') || '[]');
+            friendRequests.push({
+                from: myCode,
+                to: code,
+                status: 'pending',
+                time: new Date().toISOString()
+            });
+            localStorage.setItem('friendRequests', JSON.stringify(friendRequests));
+
+            alert('تم إرسال طلب الإضافة بنجاح!');
+            window.location.href = 'chat.html';
+        }
+    </script>
+</body>
+</html> 
