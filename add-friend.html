@@ -67,6 +67,15 @@
             const myCode = localStorage.getItem('userCode');
             
             try {
+                // التحقق من وجود المستخدم
+                const userRef = db.collection('users').doc(code);
+                const userDoc = await userRef.get();
+                
+                if (!userDoc.exists) {
+                    alert('هذا الكود غير موجود');
+                    return;
+                }
+
                 // إضافة طلب الصداقة في Firebase
                 await db.collection('friendRequests').add({
                     from: myCode,
