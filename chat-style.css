@@ -1,0 +1,1275 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 16px;
+}
+
+body {
+    background-color: #f0f0f0 !important;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    color: var(--text-color);
+}
+
+.iphone-container {
+    opacity: 0;
+    transform: translateY(50px);
+    animation: phoneAppear 1s ease forwards;
+}
+
+.iphone {
+    width: 300px;
+    height: 600px;
+    background-color: #000;
+    border-radius: 50px;
+    position: relative;
+    padding: 15px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.3);
+}
+
+.screen {
+    width: 100%;
+    height: 100%;
+    background-color: var(--bg-color);
+    border-radius: 35px;
+    overflow: hidden;
+    position: relative;
+}
+
+.notch {
+    width: 150px;
+    height: 30px;
+    background-color: #000;
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    border-bottom-left-radius: 15px;
+    border-bottom-right-radius: 15px;
+    z-index: 100;
+}
+
+.chat-container {
+    height: 100%;
+    padding-top: 30px;
+}
+
+.header {
+    background-color: var(--header-bg);
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.header h1 {
+    font-size: 22px;
+    font-weight: 600;
+}
+
+.back-button, .new-chat {
+    color: #007AFF;
+    font-size: 20px;
+    text-decoration: none;
+}
+
+.chat-list {
+    overflow-y: auto;
+    height: calc(100% - 60px);
+}
+
+.chat-item {
+    display: flex;
+    padding: 12px 15px;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+    cursor: pointer;
+}
+
+.chat-item:active {
+    background-color: #f5f5f5;
+}
+
+.profile-pic {
+    width: 50px;
+    height: 50px;
+    margin-left: 15px;
+}
+
+.profile-pic img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.chat-info {
+    flex: 1;
+}
+
+.chat-info h3 {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.chat-info p {
+    font-size: 16px;
+    color: #8e8e93;
+}
+
+.chat-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.time {
+    font-size: 12px;
+    color: #8e8e93;
+    margin-bottom: 5px;
+}
+
+.unread {
+    background-color: #007AFF;
+    color: white;
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 12px;
+}
+
+.buttons {
+    position: absolute;
+    right: -3px;
+    top: 100px;
+}
+
+.power-button {
+    width: 3px;
+    height: 80px;
+    background-color: #333;
+    position: absolute;
+    right: 0;
+}
+
+.volume-button {
+    width: 3px;
+    height: 60px;
+    background-color: #333;
+    position: absolute;
+    right: 0;
+    top: 100px;
+}
+
+@keyframes phoneAppear {
+    0% {
+        opacity: 0;
+        transform: translateY(50px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.my-code {
+    background-color: #f8f8f8;
+    padding: 20px;
+    margin: 15px;
+    border-radius: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.my-code p {
+    font-size: 16px;
+    color: #666;
+}
+
+.my-code span {
+    display: block;
+    font-size: 24px;
+    font-weight: 600;
+    color: #000;
+    margin-top: 5px;
+    letter-spacing: 2px;
+}
+
+.my-code button {
+    background-color: #007AFF;
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.my-code button:active {
+    transform: scale(0.95);
+    background-color: #0056b3;
+}
+
+.add-friend-container {
+    padding: 20px;
+}
+
+.input-container {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.input-container input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+    text-transform: uppercase;
+}
+
+.input-container button {
+    background-color: #007AFF;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.input-container button:active {
+    background-color: #0056b3;
+}
+
+.friend-code-info {
+    text-align: center;
+    padding: 30px 20px;
+    background-color: #f8f8f8;
+    border-radius: 15px;
+    margin: 20px;
+}
+
+.friend-code-info i {
+    font-size: 40px;
+    color: #007AFF;
+    margin-bottom: 15px;
+}
+
+.friend-code-info h2 {
+    font-size: 20px;
+    margin-bottom: 10px;
+    color: #000;
+}
+
+.friend-code-info p {
+    color: #666;
+    font-size: 14px;
+}
+
+.input-container {
+    margin: 20px;
+}
+
+.input-container input {
+    width: 100%;
+    padding: 15px;
+    font-size: 18px;
+    border: 2px solid #007AFF;
+    border-radius: 12px;
+    margin-bottom: 15px;
+    text-align: center;
+    letter-spacing: 2px;
+    font-weight: bold;
+}
+
+.input-container input::placeholder {
+    color: #999;
+    font-size: 16px;
+    letter-spacing: normal;
+}
+
+.input-container button {
+    width: 100%;
+    padding: 15px;
+    background-color: #007AFF;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.input-container button:active {
+    background-color: #0056b3;
+    transform: scale(0.98);
+}
+
+/* تنسيقات جديدة لصفحة إضافة الصديق */
+.add-friend-section {
+    padding: 40px 20px;
+    text-align: center;
+}
+
+.add-icon {
+    width: 80px;
+    height: 80px;
+    background-color: #007AFF;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+}
+
+.add-icon i {
+    font-size: 40px;
+    color: white;
+}
+
+.add-friend-section h2 {
+    font-size: 24px;
+    color: #000;
+    margin-bottom: 10px;
+}
+
+.subtitle {
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 30px;
+}
+
+.code-input {
+    margin: 20px 0;
+}
+
+.code-input input {
+    width: 100%;
+    height: 50px;
+    border: none;
+    background-color: #f0f0f0;
+    border-radius: 10px;
+    text-align: center;
+    font-size: 24px;
+    letter-spacing: 5px;
+    font-weight: bold;
+}
+
+.code-input input::placeholder {
+    letter-spacing: 2px;
+    font-size: 20px;
+    color: #999;
+}
+
+.add-button {
+    width: 100%;
+    height: 50px;
+    background-color: #007AFF;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 18px;
+    font-weight: bold;
+    margin-top: 20px;
+}
+
+.add-button:active {
+    background-color: #0056b3;
+    transform: scale(0.98);
+}
+
+.friend-requests {
+    margin: 10px;
+    border-bottom: 1px solid #e1e1e1;
+    padding-bottom: 10px;
+}
+
+.friend-request {
+    background-color: #f8f8f8;
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 10px;
+}
+
+.request-info {
+    margin-bottom: 10px;
+}
+
+.request-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.accept-btn, .reject-btn {
+    flex: 1;
+    padding: 8px;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.accept-btn {
+    background-color: #007AFF;
+    color: white;
+}
+
+.reject-btn {
+    background-color: #ff3b30;
+    color: white;
+}
+
+.accept-btn:active, .reject-btn:active {
+    transform: scale(0.95);
+}
+
+.messages {
+    height: calc(100% - 120px);
+    overflow-y: auto;
+    padding: 15px;
+}
+
+.message {
+    max-width: 70%;
+    padding: 10px 15px;
+    margin: 5px 0;
+    border-radius: 15px;
+    word-wrap: break-word;
+    font-size: 18px;
+    line-height: 1.4;
+}
+
+.sent {
+    background-color: var(--message-sent);
+    color: white;
+    margin-left: auto;
+    border-bottom-right-radius: 5px;
+}
+
+.received {
+    background-color: var(--message-received);
+    color: black;
+    margin-right: auto;
+    border-bottom-left-radius: 5px;
+}
+
+.message-input {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    padding: 10px;
+    background-color: var(--header-bg);
+    border-top: 1px solid var(--border-color);
+}
+
+.message-input input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    margin-left: 10px;
+    font-size: 18px;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+}
+
+.message-input button {
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 50%;
+    background-color: #007AFF;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.message-input button:active {
+    transform: scale(0.95);
+}
+
+.chat-options {
+    color: #007AFF;
+    font-size: 20px;
+}
+
+.header-actions {
+    display: flex;
+    gap: 15px;
+}
+
+.friends-list-btn {
+    background: none;
+    border: none;
+    color: #007AFF;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.friends-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+}
+
+.friends-modal-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    width: 90%;
+    max-width: 300px;
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.modal-header {
+    padding: 15px;
+    background-color: #f6f6f6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #ddd;
+}
+
+.modal-header h2 {
+    font-size: 18px;
+    color: #000;
+}
+
+.close-modal {
+    background: none;
+    border: none;
+    color: #007AFF;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.friends-list {
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 10px;
+}
+
+.friend-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    border-bottom: 1px solid #f1f1f1;
+}
+
+.friend-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.friend-info i {
+    color: #007AFF;
+    font-size: 20px;
+}
+
+.remove-friend {
+    background-color: #ff3b30;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.remove-friend i {
+    font-size: 16px;
+}
+
+.remove-friend:active {
+    transform: scale(0.95);
+    background-color: #e0271f;
+}
+
+.chat-options {
+    position: relative;
+    cursor: pointer;
+    padding: 5px;
+}
+
+.options-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: white;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    border-radius: 12px;
+    min-width: 140px;
+    z-index: 1000;
+}
+
+.options-menu.show {
+    display: block;
+}
+
+.option-item {
+    padding: 12px 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #ff3b30;
+}
+
+.delete-friend {
+    color: #ff3b30;
+}
+
+.delete-friend:active {
+    background-color: #ffebeb;
+}
+
+/* تعديل زر القائمة */
+.chat-list-btn {
+    background: none;
+    border: none;
+    color: #007AFF;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 5px;
+}
+
+/* تنسيقات القائمة المنبثقة */
+.chat-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+}
+
+.chat-modal-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    width: 90%;
+    max-width: 300px;
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.modal-chat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    border-bottom: 1px solid #f1f1f1;
+    cursor: pointer;
+}
+
+.modal-chat-item:active {
+    background-color: #f5f5f5;
+}
+
+.chat-user-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.chat-user-info i {
+    color: #007AFF;
+    font-size: 20px;
+}
+
+.modal-chat-item .fa-chevron-left {
+    color: #8e8e93;
+    font-size: 14px;
+}
+
+.chats-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+/* تنسيقات التبويبات */
+.chat-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    padding: 10px;
+    background-color: #f6f6f6;
+    border-bottom: 1px solid #e1e1e1;
+}
+
+.tab {
+    padding: 8px 20px;
+    cursor: pointer;
+    color: #8e8e93;
+    border-radius: 20px;
+    transition: all 0.3s ease;
+}
+
+.tab i {
+    font-size: 24px;
+}
+
+.tab.active {
+    color: #007AFF;
+    background-color: #e1f0ff;
+}
+
+.tab-content {
+    height: calc(100% - 110px);
+    overflow-y: auto;
+}
+
+/* تنسيقات قائمة الأصدقاء */
+.friends-list {
+    padding: 10px;
+}
+
+.friend-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    border-bottom: 1px solid #f1f1f1;
+}
+
+.friend-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.friend-info i {
+    font-size: 24px;
+    color: #007AFF;
+    background-color: #e1f0ff;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* تنسيقات قائمة الخيارت */
+.options-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: white;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    border-radius: 12px;
+    min-width: 140px;
+    z-index: 1000;
+}
+
+.options-menu.show {
+    display: block;
+}
+
+.option-item {
+    padding: 12px 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #ff3b30;
+}
+
+/* تنسيقات مربع التأكيد */
+.confirm-dialog {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    z-index: 2000;
+    justify-content: center;
+    align-items: flex-end;
+    animation: fadeIn 0.3s ease;
+}
+
+.confirm-dialog.show {
+    display: flex;
+}
+
+.confirm-content {
+    background: rgba(255, 255, 255, 0.95);
+    width: 100%;
+    padding: 20px;
+    border-radius: 20px 20px 0 0;
+    text-align: center;
+    animation: slideUp 0.3s ease;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.confirm-content p {
+    margin: 15px 0 25px 0;
+    font-size: 20px;
+    font-weight: 500;
+    color: #000;
+}
+
+.confirm-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 0 10px;
+}
+
+.confirm-buttons button {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 12px;
+    font-size: 20px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.confirm-yes {
+    background-color: #ff3b30;
+    color: white;
+}
+
+.confirm-no {
+    background-color: rgba(0, 0, 0, 0.05);
+    color: #007AFF;
+}
+
+.confirm-buttons button:active {
+    transform: scale(0.98);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(100%);
+    }
+    to {
+        transform: translateY(0);
+    }
+}
+
+/* تنسيقات الإعدادات */
+.settings-section {
+    padding: 20px;
+}
+
+.settings-section h2 {
+    font-size: 20px;
+    margin-bottom: 20px;
+    color: #000;
+}
+
+.privacy-option {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+    border-bottom: 1px solid #eee;
+}
+
+/* تنسيقات زر التبديل */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 34px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 2px;
+    bottom: 2px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: #007AFF;
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
+
+/* إضافة متغيرات CSS للألوان */
+:root {
+    --bg-color: #ffffff;
+    --text-color: #000000;
+    --header-bg: #f6f6f6;
+    --message-sent: #007AFF;
+    --message-received: #e5e5ea;
+    --border-color: #e1e1e1;
+}
+
+/* تنسيقات الوضع الداكن */
+.dark-theme {
+    --bg-color: #2c2c2e;
+    --text-color: #ffffff;
+    --header-bg: #3a3a3c;
+    --message-sent: #0A84FF;
+    --message-received: #48484a;
+    --border-color: #48484a;
+}
+
+/* تطبيق المتغيرات */
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+}
+
+.screen {
+    background-color: var(--bg-color);
+}
+
+.header {
+    background-color: var(--header-bg);
+    border-bottom-color: var(--border-color);
+}
+
+.message.sent {
+    background-color: var(--message-sent);
+}
+
+.message.received {
+    background-color: var(--message-received);
+}
+
+/* تنسيقات قسم المظهر */
+.section-title {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+}
+
+.theme-option {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+/* تحديث باقي العناصر للوضع الداكن */
+.dark-theme .chat-item {
+    border-bottom-color: var(--border-color);
+}
+
+.dark-theme .friend-request {
+    background-color: var(--header-bg);
+}
+
+.dark-theme .message-input {
+    background-color: var(--header-bg);
+    border-top-color: var(--border-color);
+}
+
+.dark-theme .message-input input {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    border-color: var(--border-color);
+}
+
+/* تحسين وضوح النصوص في الوضع الداكن */
+.dark-theme .chat-info h3 {
+    color: #ffffff;
+}
+
+.dark-theme .chat-info p {
+    color: #b0b0b2;
+}
+
+.dark-theme .time {
+    color: #b0b0b2;
+}
+
+.dark-theme .message.received {
+    color: #ffffff;
+}
+
+.dark-theme .message-input input {
+    color: #ffffff;
+}
+
+.dark-theme .message-input input::placeholder {
+    color: #8e8e93;
+}
+
+.dark-theme .friend-request {
+    background-color: #3a3a3c;
+}
+
+.dark-theme .friend-info span {
+    color: #ffffff;
+}
+
+.dark-theme .settings-section h2 {
+    color: #ffffff;
+}
+
+.dark-theme .privacy-option span {
+    color: #ffffff;
+}
+
+.dark-theme .theme-option span {
+    color: #ffffff;
+}
+
+/* تعديل متغيرات الألوان للوضع الداكن */
+.dark-theme .iphone {
+    background-color: #000;
+}
+
+.dark-theme .screen {
+    --bg-color: #2c2c2e;
+    --text-color: #ffffff;
+    --header-bg: #3a3a3c;
+    --message-sent: #0A84FF;
+    --message-received: #48484a;
+    --border-color: #48484a;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+}
+
+/* إزالة الخلفية الداكنة من body */
+body {
+    background-color: #f0f0f0 !important; /* سيبقى لون الخلفية فاتح دائماً */
+}
+
+/* تعديل العناصر داخل الشاشة فقط */
+.dark-theme .screen .header {
+    background-color: var(--header-bg);
+    border-bottom-color: var(--border-color);
+}
+
+.dark-theme .screen .message.sent {
+    background-color: var(--message-sent);
+}
+
+.dark-theme .screen .message.received {
+    background-color: var(--message-received);
+    color: #ffffff;
+}
+
+.dark-theme .screen .chat-info h3 {
+    color: #ffffff;
+}
+
+.dark-theme .screen .chat-info p {
+    color: #b0b0b2;
+}
+
+.dark-theme .screen .time {
+    color: #b0b0b2;
+}
+
+.dark-theme .screen .message-input {
+    background-color: var(--header-bg);
+}
+
+.dark-theme .screen .message-input input {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    border-color: var(--border-color);
+}
+
+.dark-theme .my-code {
+    background-color: #3a3a3c;
+}
+
+.dark-theme .my-code p {
+    color: #b0b0b2;
+}
+
+.dark-theme .my-code span {
+    color: #ffffff;
+}
+
+/* تنسيقات قسم الموسيقى */
+.music-section {
+    background: #f8f8f8;
+    border-radius: 12px;
+    padding: 15px;
+    margin-top: 15px;
+}
+
+.music-input {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.music-input input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.music-controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.control-btn {
+    background: none;
+    border: none;
+    color: #007AFF;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+#volumeControl {
+    flex: 1;
+}
+
+/* للوضع الداكن */
+.dark-theme .music-section {
+    background: #3a3a3c;
+}
+
+.dark-theme .music-input input {
+    background: #2c2c2e;
+    border-color: #48484a;
+    color: white;
+}
+
+.volume-control {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 15px 0;
+}
+
+.volume-control i {
+    color: #007AFF;
+    font-size: 20px;
+    min-width: 25px;
+}
+
+#volumeSlider {
+    width: 100%;
+    height: 4px;
+    -webkit-appearance: none;
+    background: #e1e1e1;
+    border-radius: 2px;
+    outline: none;
+}
+
+#volumeSlider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 15px;
+    height: 15px;
+    background: #007AFF;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.playback-controls {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.control-btn {
+    background: none;
+    border: none;
+    color: #007AFF;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 10px;
+}
+
+.control-btn:active {
+    transform: scale(0.95);
+}
+
+/* للوضع الداكن */
+.dark-theme #volumeSlider {
+    background: #48484a;
+}
+
+/* تنسيقات صفحة إضافة صديق */
+.add-friend-input {
+    padding: 20px;
+}
+
+.add-friend-input input {
+    width: 100%;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    font-size: 16px;
+    text-align: right;
+}
+
+.header-arrow {
+    font-size: 18px;
+} 
