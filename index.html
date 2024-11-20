@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rw7 chat</title>
+    <link rel="stylesheet" href="iphone-style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-firestore-compat.js"></script>
+    <script>
+      const firebaseConfig = {
+        apiKey: "AIzaSyAYWFY3sLzNfcnDDIqNfyD7ipnHXbswjHY",
+        authDomain: "x12-4e880.firebaseapp.com",
+        projectId: "x12-4e880",
+        storageBucket: "x12-4e880.firebasestorage.app",
+        messagingSenderId: "808560716111",
+        appId: "1:808560716111:web:4b0d47d1442c896187fd3a",
+        measurementId: "G-3EEHZT3Z7V"
+      };
+
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.firestore();
+
+      async function checkUserCode() {
+        let userCode = localStorage.getItem("userCode");
+        if (!userCode) {
+          const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+          userCode = "";
+          for (let i = 0; i < 6; i++) {
+            userCode += characters.charAt(
+              Math.floor(Math.random() * characters.length)
+            );
+          }
+          
+          await db.collection('users').doc(userCode).set({
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            lastActive: firebase.firestore.FieldValue.serverTimestamp()
+          });
+          
+          localStorage.setItem("userCode", userCode);
+        }
+        window.location.href = "chat.html";
+      }
+
+      function checkFriendRequests() {
+        const myCode = localStorage.getItem("userCode");
+        const requests = JSON.parse(
+          localStorage.getItem("friendRequests") || "[]"
+        );
+        const myRequests = requests.filter(
+          (req) => req.to === myCode && req.status === "pending"
+        );
+
+        const requestsContainer = document.getElementById("friendRequests");
+        requestsContainer.innerHTML = "";
+
+        if (myRequests.length > 0) {
+          myRequests.forEach((request) => {
+            const requestElement = document.createElement("div");
+            requestElement.className = "friend-request";
+            requestElement.innerHTML = `
+                        <div class="request-info">
+                            <i class="fas fa-user-plus"></i>
+                            <span>طلب إضافة جديد من ${request.from}</span>
+                        </div>
+                        <div class="request-actions">
+                            <button onclick="acceptRequest('${request.from}')" class="accept-btn">قبول</button>
+                            <button onclick="rejectRequest('${request.from}')" class="reject-btn">رفض</button>
+                        </div>
+                    `;
+            requestsContainer.appendChild(requestElement);
+          });
+        }
+      }
+
+      function acceptRequest(fromCode) {
+        updateRequestStatus(fromCode, "accepted");
+        alert("تم قبول الطلب!");
+        location.reload();
+      }
+
+      function rejectRequest(fromCode) {
+        updateRequestStatus(fromCode, "rejected");
+        alert("تم رفض الطلب");
+        location.reload();
+      }
+
+      function updateRequestStatus(fromCode, status) {
+        const myCode = localStorage.getItem("userCode");
+        let requests = JSON.parse(
+          localStorage.getItem("friendRequests") || "[]"
+        );
+        requests = requests.map((req) => {
+          if (req.from === fromCode && req.to === myCode) {
+            return { ...req, status: status };
+          }
+          return req;
+        });
+        localStorage.setItem("friendRequests", JSON.stringify(requests));
+      }
+
+      window.onload = function () {
+        checkFriendRequests();
+      };
+    </script>
+  </head>
+  <body>
+    <div class="iphone-container">
+      <div class="iphone">
+        <div class="screen">
+          <div class="notch"></div>
+          <div class="content">
+            <div class="apps-grid">
+              <div class="app-icon" onclick="checkUserCode()">
+                <i class="fas fa-comments"></i>
+                <span>Rw7 chat</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="buttons">
+          <div class="power-button"></div>
+          <div class="volume-button"></div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

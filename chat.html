@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rw7 chat</title>
+    <link rel="stylesheet" href="chat-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="iphone-container">
+        <div class="iphone">
+            <div class="screen">
+                <div class="notch"></div>
+                <div class="chat-container">
+                    <div class="header">
+                        <a href="index.html" class="back-button">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                        <h1>المحادثات</h1>
+                        <div class="header-actions">
+                            <a href="add-friend.html" class="new-chat">
+                                <i class="fas fa-user-plus"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="chat-tabs">
+                        <div class="tab active" onclick="showTab('chats')">
+                            <i class="fas fa-comments"></i>
+                        </div>
+                        <div class="tab" onclick="showTab('friends')">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="tab" onclick="showTab('settings')">
+                            <i class="fas fa-cog"></i>
+                        </div>
+                    </div>
+
+                    <div id="friendsTab" class="tab-content" style="display: none;">
+                        <div class="my-code">
+                            <p>الكود الخاص بك: <span id="userCode">ABC123</span></p>
+                            <button onclick="copyCode()">نسخ</button>
+                        </div>
+                        <div class="friend-requests" id="friendRequests">
+                            <!-- طلبات الإضافة ستضاف هنا -->
+                        </div>
+                        <div class="friends-list" id="friendsList">
+                            <!-- سيتم إضافة الأصدقاء هنا -->
+                        </div>
+                    </div>
+
+                    <div id="chatsTab" class="tab-content">
+                        <div class="chat-list">
+                            <!-- المحادثات ستضاف هنا -->
+                        </div>
+                    </div>
+
+                    <div id="settingsTab" class="tab-content" style="display: none;">
+                        <div class="settings-section">
+                            <h2>مظهر التطبيق</h2>
+                            <div class="theme-option">
+                                <span>الوضع الداكن</span>
+                                <label class="switch">
+                                    <input type="checkbox" id="darkMode" onchange="toggleDarkMode()">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+
+                            <h2 class="section-title">الموسيقى</h2>
+                            <div class="music-section">
+                                <div class="music-input">
+                                    <input type="text" id="youtubeUrl" placeholder="ضع رابط YouTube هنا" dir="ltr">
+                                    <button onclick="loadYoutubeVideo()">
+                                        <i class="fas fa-play"></i>
+                                    </button>
+                                </div>
+                                <div id="player"></div>
+                                <div class="music-controls">
+                                    <div class="volume-control">
+                                        <i class="fas fa-volume-up" id="volumeIcon"></i>
+                                        <input type="range" id="volumeSlider" min="0" max="100" value="50">
+                                    </div>
+                                    <div class="playback-controls">
+                                        <button onclick="togglePlay()" class="control-btn">
+                                            <i class="fas fa-play" id="playPauseIcon"></i>
+                                        </button>
+                                        <button onclick="stopVideo()" class="control-btn">
+                                            <i class="fas fa-stop"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="buttons">
+                <div class="power-button"></div>
+                <div class="volume-button"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script>
+        let player;
+
+        function copyCode() {
+            const code = document.getElementById('userCode').textContent;
+            navigator.clipboard.writeText(code);
+            alert('تم نسخ الكود!');
+        }
+
+        async function checkFriendRequests() {
+            const myCode = localStorage.getItem('userCode');
+            
+            try {
+                const snapshot = await db.collection('friendRequests')
+                    .where('to', '==', myCode)
+                    .where('status', '==', 'pending')
+                    .get();
+                    
+                const requests = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+
+                displayFriendRequests(requests);
+            } catch (error) {
+                console.error('Error loading requests:', error);
+            }
+        }
+
+        async function acceptRequest(requestId) {
+            try {
+                await db.collection('friendRequests').doc(requestId).update({
+                    status: 'accepted',
+                    acceptedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                alert('تم قبول الطلب!');
+                checkFriendRequests();
+            } catch (error) {
+                alert('حدث خطأ في قبول الطلب');
+                console.error(error);
+            }
+        }
+
+        function rejectRequest(fromCode) {
+            updateRequestStatus(fromCode, 'rejected');
+            alert('تم رفض الطلب');
+            location.reload();
+        }
+
+        function updateRequestStatus(fromCode, status) {
+            const myCode = localStorage.getItem('userCode');
+            let requests = JSON.parse(localStorage.getItem('friendRequests') || '[]');
+            requests = requests.map(req => {
+                if (req.from === fromCode && req.to === myCode) {
+                    return { ...req, status: status };
+                }
+                return req;
+            });
+            localStorage.setItem('friendRequests', JSON.stringify(requests));
+        }
+
+        function toggleChatList() {
+            const modal = document.getElementById('chatListModal');
+            modal.style.display = 'block';
+            updateModalChatList();
+        }
+
+        function hideChatList() {
+            const modal = document.getElementById('chatListModal');
+            modal.style.display = 'none';
+        }
+
+        function updateModalChatList() {
+            const myCode = localStorage.getItem('userCode');
+            const requests = JSON.parse(localStorage.getItem('friendRequests') || '[]');
+            const acceptedFriends = requests.filter(req => 
+                req.status === 'accepted' && (req.from === myCode || req.to === myCode)
+            );
+
+            const chatsList = document.getElementById('modalChatList');
+            chatsList.innerHTML = '';
+
+            acceptedFriends.forEach(friend => {
+                const friendCode = friend.from === myCode ? friend.to : friend.from;
+                const chatElement = document.createElement('div');
+                chatElement.className = 'modal-chat-item';
+                chatElement.onclick = () => {
+                    openChat(friendCode);
+                    hideChatList();
+                };
+                chatElement.innerHTML = `
+                    <div class="chat-user-info">
+                        <i class="fas fa-user"></i>
+                        <span>${friendCode}</span>
+                    </div>
+                    <i class="fas fa-chevron-left"></i>
+                `;
+                chatsList.appendChild(chatElement);
+            });
+        }
+
+        function showChats() {
+            const myCode = localStorage.getItem('userCode');
+            const requests = JSON.parse(localStorage.getItem('friendRequests') || '[]');
+            const acceptedFriends = requests.filter(req => 
+                (req.status === 'accepted' && (req.from === myCode || req.to === myCode))
+            );
+
+            const chatList = document.querySelector('.chat-list');
+            chatList.innerHTML = ''; // مسح المحادثات القديمة
+
+            acceptedFriends.forEach(friend => {
+                const friendCode = friend.from === myCode ? friend.to : friend.from;
+                const chatElement = document.createElement('div');
+                chatElement.className = 'chat-item';
+                chatElement.onclick = () => openChat(friendCode);
+                chatElement.innerHTML = `
+                    <div class="profile-pic">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="chat-info">
+                        <h3>مستخدم ${friendCode}</h3>
+                        <p>انقر للمحادثة</p>
+                    </div>
+                    <div class="chat-meta">
+                        <span class="time">${new Date(friend.time).toLocaleTimeString('ar-SA', {
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        })}</span>
+                    </div>
+                `;
+                chatList.appendChild(chatElement);
+            });
+        }
+
+        function openChat(friendCode) {
+            // تخزين كود الصديق للمحادثة
+            localStorage.setItem('currentChat', friendCode);
+            // الانتقال إلى صفحة المحادثة
+            window.location.href = 'chat-room.html';
+        }
+
+        function showTab(tabName) {
+            // تحديث الأيقونات النشطة
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+
+            // إخفاء/إظهار المحتوى
+            document.getElementById('chatsTab').style.display = tabName === 'chats' ? 'block' : 'none';
+            document.getElementById('friendsTab').style.display = tabName === 'friends' ? 'block' : 'none';
+            document.getElementById('settingsTab').style.display = tabName === 'settings' ? 'block' : 'none';
+
+            if (tabName === 'friends') {
+                updateFriendsList();
+            }
+
+            if (tabName === 'settings') {
+                loadPrivacySettings();
+            }
+        }
+
+        function loadPrivacySettings() {
+            const settings = JSON.parse(localStorage.getItem('privacySettings') || '{}');
+            document.getElementById('onlineStatus').checked = settings.onlineStatus || false;
+            document.getElementById('allowAdd').checked = settings.allowAdd || false;
+        }
+
+        function updatePrivacy(setting) {
+            const settings = JSON.parse(localStorage.getItem('privacySettings') || '{}');
+            settings[setting] = document.getElementById(setting).checked;
+            localStorage.setItem('privacySettings', JSON.stringify(settings));
+        }
+
+        function updateFriendsList() {
+            const myCode = localStorage.getItem('userCode');
+            const requests = JSON.parse(localStorage.getItem('friendRequests') || '[]');
+            const acceptedFriends = requests.filter(req => 
+                req.status === 'accepted' && (req.from === myCode || req.to === myCode)
+            );
+
+            const friendsList = document.getElementById('friendsList');
+            friendsList.innerHTML = '';
+
+            acceptedFriends.forEach(friend => {
+                const friendCode = friend.from === myCode ? friend.to : friend.from;
+                const friendElement = document.createElement('div');
+                friendElement.className = 'friend-item';
+                friendElement.innerHTML = `
+                    <div class="friend-info">
+                        <i class="fas fa-user"></i>
+                        <span>${friendCode}</span>
+                    </div>
+                    <button onclick="removeFriend('${friendCode}')" class="remove-friend">
+                        <i class="fas fa-user-minus"></i>
+                    </button>
+                `;
+                friendsList.appendChild(friendElement);
+            });
+        }
+
+        function removeFriend(friendCode) {
+            if (confirm('هل أنت متأكد من إزالة هذا الصديق؟')) {
+                const myCode = localStorage.getItem('userCode');
+                let requests = JSON.parse(localStorage.getItem('friendRequests') || '[]');
+                
+                // حذف الصديق من قائمة الطلبات
+                requests = requests.filter(req => 
+                    !(req.status === 'accepted' && 
+                    ((req.from === myCode && req.to === friendCode) || 
+                     (req.from === friendCode && req.to === myCode)))
+                );
+                
+                // حفظ التغييرات
+                localStorage.setItem('friendRequests', JSON.stringify(requests));
+                
+                // حذف المحادثات
+                localStorage.removeItem(`chat_${friendCode}`);
+                
+                // تحديث القوائم
+                updateFriendsList();
+                showChats();
+                
+                alert('تم إزالة الصديق بنجاح');
+            }
+        }
+
+        function toggleDarkMode() {
+            const isDark = document.getElementById('darkMode').checked;
+            document.body.classList.toggle('dark-theme', isDark);
+            localStorage.setItem('darkMode', isDark);
+        }
+
+        function loadYoutubeVideo() {
+            const url = document.getElementById('youtubeUrl').value;
+            const videoId = extractVideoID(url);
+            
+            if (videoId) {
+                if (player) {
+                    player.loadVideoById(videoId);
+                } else {
+                    createPlayer(videoId);
+                }
+            }
+        }
+
+        function extractVideoID(url) {
+            const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[7].length == 11) ? match[7] : false;
+        }
+
+        function createPlayer(videoId) {
+            player = new YT.Player('player', {
+                height: '150',
+                width: '100%',
+                videoId: videoId,
+                playerVars: {
+                    'playsinline': 1,
+                    'controls': 1
+                },
+                events: {
+                    'onReady': onPlayerReady
+                }
+            });
+        }
+
+        function onPlayerReady(event) {
+            const volumeSlider = document.getElementById('volumeSlider');
+            volumeSlider.addEventListener('input', function() {
+                if (player && player.setVolume) {
+                    const volume = this.value;
+                    player.setVolume(volume);
+                    
+                    // تحديث أيقونة الصوت
+                    const volumeIcon = document.getElementById('volumeIcon');
+                    if (volume == 0) {
+                        volumeIcon.className = 'fas fa-volume-mute';
+                    } else if (volume < 50) {
+                        volumeIcon.className = 'fas fa-volume-down';
+                    } else {
+                        volumeIcon.className = 'fas fa-volume-up';
+                    }
+                }
+            });
+        }
+
+        function togglePlay() {
+            if (player) {
+                const state = player.getPlayerState();
+                if (state === YT.PlayerState.PLAYING) {
+                    player.pauseVideo();
+                    document.getElementById('playPauseIcon').className = 'fas fa-play';
+                } else {
+                    player.playVideo();
+                    document.getElementById('playPauseIcon').className = 'fas fa-pause';
+                }
+            }
+        }
+
+        function stopVideo() {
+            if (player) {
+                player.stopVideo();
+                document.getElementById('playPauseIcon').className = 'fas fa-play';
+            }
+        }
+
+        window.onload = function() {
+            // التحقق من وجود كود مخزن مسبقاً
+            let userCode = localStorage.getItem('userCode');
+            
+            // إذا لم يكن هناك كود مخزن، نقوم بإنشاء كود جديد
+            if (!userCode) {
+                const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+                userCode = '';
+                for(let i = 0; i < 6; i++) {
+                    userCode += characters.charAt(Math.floor(Math.random() * characters.length));
+                }
+                // تخزين الكود الجديد
+                localStorage.setItem('userCode', userCode);
+            }
+            
+            // عرض الكود في الصفحة
+            document.getElementById('userCode').textContent = userCode;
+
+            // التحقق من وجود طلبات إضافة
+            checkFriendRequests();
+
+            // إضافة استدعاء لعرض المحادثات
+            showChats();
+
+            // تحميل الإعدادات
+            loadPrivacySettings();
+
+            // تحميل حالة الوضع الداكن
+            const isDark = localStorage.getItem('darkMode') === 'true';
+            document.getElementById('darkMode').checked = isDark;
+            document.body.classList.toggle('dark-theme', isDark);
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('messageText');
+            const text = input.value.trim();
+            
+            if (!text) return;
+
+            const message = {
+                from: localStorage.getItem('userCode'),
+                to: friendCode,
+                text: text,
+                time: new Date()
+            };
+
+            // حفظ الرسالة في Firebase
+            await db.collection('messages').add(message);
+            
+            input.value = '';
+            loadMessages();
+        }
+
+        async function loadMessages() {
+            const myCode = localStorage.getItem('userCode');
+            
+            try {
+                const snapshot = await db.collection('messages')
+                    .where('participants', 'array-contains', myCode)
+                    .orderBy('time')
+                    .get();
+                    
+                const messages = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+
+                displayMessages(messages);
+            } catch (error) {
+                console.error('Error loading messages:', error);
+            }
+        }
+    </script>
+</body>
+</html> 
