@@ -47,6 +47,7 @@
                     <div class="add-friend-input">
                         <input type="text" id="friendCode" maxlength="6" placeholder="أدخل كود صديقك" 
                                oninput="this.value = this.value.toUpperCase()">
+                        <button onclick="addFriend()" class="add-button">إضافة</button>
                     </div>
                 </div>
             </div>
@@ -68,12 +69,7 @@
             const myCode = localStorage.getItem('userCode');
             
             try {
-                const userDoc = await db.collection('users').doc(code).get();
-                if (!userDoc.exists) {
-                    alert('هذا الكود غير موجود');
-                    return;
-                }
-
+                // إضافة طلب الصداقة في Firebase
                 await db.collection('friendRequests').add({
                     from: myCode,
                     to: code,
