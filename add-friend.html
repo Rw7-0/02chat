@@ -68,22 +68,23 @@
             
             try {
                 // التحقق من وجود المستخدم
-                const userRef = db.collection('users').doc(code);
-                const userDoc = await userRef.get();
+                const userRef = await db.collection('users').doc(code).get();
                 
-                if (!userDoc.exists) {
+                if (!userRef.exists) {
                     alert('هذا الكود غير موجود');
                     return;
                 }
 
                 // إضافة طلب الصداقة في Firebase
-                await db.collection('friendRequests').add({
+                const friendRequest = {
                     from: myCode,
                     to: code,
                     status: 'pending',
                     time: firebase.firestore.FieldValue.serverTimestamp(),
                     participants: [myCode, code]
-                });
+                };
+
+                await db.collection('friendRequests').add(friendRequest);
 
                 alert('تم إرسال طلب الإضافة بنجاح!');
                 window.location.href = 'chat.html';
